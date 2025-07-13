@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/airshhlay/va-booking-bot/internal/util"
 	"github.com/airshhlay/va-booking-bot/internal/va"
 	"github.com/go-co-op/gocron"
 )
@@ -41,12 +42,22 @@ func main() {
 		panic(err)
 	}
 	scheduler := gocron.NewScheduler(loc)
-	scheduler.Cron(_refreshTokenDaily).Do(va.GetToken, context.Background())
-	scheduler.Cron(_bookingTimeDaily).Do(va.BookClass, va.BookClassParams{
-		SiteID:          va.SiteIDPayaLebar,
-		ClassTime24Hour: "11:30",
-		ClassDay:        int(time.Sunday),
-		ClassName:       va.ClassNameCycleSpirit,
+	scheduler.Cron(_refreshTokenDaily).Do(func() {
+		_, err := va.GetToken(context.Background())
+		if err != nil {
+			log.Fatalf("get token: err %v", err)
+		}
+	})
+	scheduler.Cron(_bookingTimeDaily).Do(func() {
+		err := va.BookClass(context.Background(), va.BookClassParams{
+			SiteID:          va.SiteIDPayaLebar,
+			ClassTime24Hour: "11:30",
+			ClassDay:        int(time.Sunday),
+			ClassName:       va.ClassNameCycleSpirit,
+		})
+		if err != nil {
+			log.Fatalf("book class: time: %v, err %v", util.CurrentTimeInSG(), err)
+		}
 	})
 
 	scheduler.StartBlocking()

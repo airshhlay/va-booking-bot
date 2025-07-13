@@ -23,6 +23,7 @@ var (
 	ErrNoMoreSeats           = errors.New("no more seats")
 	ErrUserHasNoMoreBookings = errors.New("user has no more bookings")
 	ErrBookingNotSuccess     = errors.New("booking not success")
+	ErrUserCannotBook        = errors.New("user can not book")
 )
 
 var (
@@ -318,6 +319,7 @@ type getClassSeatsBody struct {
 type getClassSeatsResp struct {
 	RemainingBookingsCount int
 	RoomLayout             [][]seat
+	CanIBook               int
 }
 
 func GetAvailableClassSeats(ctx context.Context, bookingID int, productID string) ([]seat, error) {
@@ -362,6 +364,10 @@ func GetAvailableClassSeats(ctx context.Context, bookingID int, productID string
 	res := getClassSeatsResp{}
 	if err := decoder.Decode(&res); err != nil {
 		return nil, err
+	}
+
+	if res.CanIBook == 1 {
+		return nil, ErrUserCannotBook
 	}
 
 	var availableSeats []seat
