@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/airshhlay/va-booking-bot/internal/auth"
 	"github.com/airshhlay/va-booking-bot/internal/util"
 	"github.com/airshhlay/va-booking-bot/internal/va"
 	"github.com/go-co-op/gocron"
@@ -35,6 +36,11 @@ func main() {
 		panic(err)
 	}
 	log.SetOutput(logFile)
+
+	err = auth.Load()
+	if err != nil {
+		panic(err)
+	}
 
 	loc, err := time.LoadLocation("Asia/Singapore")
 	if err != nil {
